@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divs Aleatorios</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="agregarDiv">Agregar Div</button>
+    <div class="container" id="divContainer"></div>
+
+    <script>
+        const divContainer = document.getElementById('divContainer');
+        const agregarDivButton = document.getElementById('agregarDiv');
+        const valoresAgregados = [];
+
+        let divIdCounter = 1; // Inicializa un contador para los IDs únicos.
+
+        agregarDivButton.addEventListener('click', () => {
+            const nuevoDiv = document.createElement('div');
+            nuevoDiv.classList.add('box');
+            const valorAleatorio = Math.floor(Math.random() * 100);
+            nuevoDiv.textContent = valorAleatorio;
+
+            const divId = `div${divIdCounter++}`; // Crea un ID único.
+            nuevoDiv.id = divId;
+
+            valoresAgregados.push({
+                id: divId,
+                valor: valorAleatorio
+            }); // Almacena un objeto que contiene el ID y el valor.
+
+            divContainer.appendChild(nuevoDiv);
+
+            nuevoDiv.addEventListener('click', () => {
+                const divId = nuevoDiv.id; // Obtiene el ID del div clickeado.
+                const divIndex = valoresAgregados.findIndex(div => div.id === divId);
+                //const valoresAnteriores = valoresAgregados.slice(divIndex + 1, divIndex + 6);
+                const valoresAnteriores = valoresAgregados.slice( divIndex-6,divIndex+1);
+                console.log('Valores anteriores al div clickeado (incluyendo el clickeado):');
+                //console.log(valoresAnteriores.map(div => div.valor).reverse());
+                console.log(valoresAnteriores.map(div => div.valor));
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticks UpDown Mini - V100</title>
+    <style>
+      .container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1px;
+      }
+      .box {
+        width: 40px;
+        height:40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <button id="agregarDiv">Agregar Div</button> -->
+    <div class="container" id="divContainer"></div>
+  </body>
+</html>
+
+<script>
+  var symbol = "R_100";
+  var decimals = 2;
+
+  var ws = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=1089");
+
+  ws.onopen = function (evt) {
+    ws.send(JSON.stringify({ ticks: symbol }));
+  };
+
+  var mticks = [0, 0];
+  var first = 0;
+
+  ws.onmessage = function (msg) {
+    var data = JSON.parse(msg.data);
+    mticks[1] = data.tick.quote;
+    mticks[0] = first;
+    first = data.tick.quote;
+
+    var digit = Number(data.tick.quote).toFixed(decimals).slice(-1);
+
+    if (mticks[0] && mticks[1] != 0) {
+      var change = Number(mticks[1] - mticks[0]).toFixed(decimals); // cuando el change es igual a cero es un caso especial, pos,neg,cero
+
+      //obtiene solo la parte entera
+      // var nchange = (change + "").split(".")[1];
+      if (change > 0) {
+        console.log(change + " :cambio positivo");
+        adding(change);
+      } else if (change < 0) {
+        console.log(change + " :cambio negativo");
+        adding(change);
+      } else if (change == 0) {
+        console.log(change + " :no nay cambio");
+        adding(change);
+      }
+    } else {
+      // console.log("esperando");
+    }
+  };
+  const divContainer = document.getElementById("divContainer");
+  const agregarDivButton = document.getElementById("agregarDiv");
+  const valoresAgregados = [];
+
+  let divIdCounter = 1; // Inicializa un contador para los IDs únicos.
+  function adding(change) {
+    const nuevoDiv = document.createElement("div");
+    nuevoDiv.classList.add("box");
+    //const valorAleatorio = Math.floor(Math.random() * 100);
+    nuevoDiv.textContent = change;
+
+    const divId = `div${divIdCounter++}`; // Crea un ID único.
+    nuevoDiv.id = divId;
+    if (change > 0) {
+        nuevoDiv.style.backgroundColor = "#2eb12e";
+      } else if (change < 0) {
+        nuevoDiv.style.backgroundColor = "#ff5353";
+      } else if (change == 0) {
+        nuevoDiv.style.backgroundColor = "#c5c5c5";
+      }
+    
+
+    valoresAgregados.push({
+      id: divId,
+      valor: change,
+    }); // Almacena un objeto que contiene el ID y el valor.
+
+    divContainer.appendChild(nuevoDiv);
+
+    nuevoDiv.addEventListener("click", () => {
+      const divId = nuevoDiv.id; // Obtiene el ID del div clickeado.
+      const divIndex = valoresAgregados.findIndex((div) => div.id === divId);
+      //const valoresAnteriores = valoresAgregados.slice(divIndex + 1, divIndex + 6);
+      const valoresAnteriores = valoresAgregados.slice(
+        divIndex - 6,
+        divIndex + 1
+      );
+      console.log(
+        "Valores anteriores al div clickeado (incluyendo el clickeado):"
+      );
+      //console.log(valoresAnteriores.map(div => div.valor).reverse());
+      console.log(valoresAnteriores.map((div) => div.valor)); 
+
+      //este valor hay que guardar en otro array para exportarlo, o en otro objeto
+      //valoresAnteriores.map((div) => div.valor)
+    });
+
+    //mover el scroll abajo
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+</script>

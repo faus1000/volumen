@@ -1,0 +1,172 @@
+<head>
+    <title>UpDown Chart V100(1s)</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.png">
+    <style>
+        html,
+        * {
+            padding: 0px;
+        }
+
+        body {
+            overflow: hidden;
+            /*background-color: #021624;
+            background-color: #041220;*/
+            background-color: #020d1c;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+
+        }
+
+       
+/*
+ #graphContainer {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            right: 132px;
+            width: 100%;
+        }*/
+        #chartContainer { 
+            width: 100%;
+            height: 100%; 
+            position: absolute;
+           
+        } 
+    </style>
+</head>
+
+<body>
+    <div class="container"> 
+        <div id="chartContainer"></div>
+        
+    </div>
+
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script>
+        var symbol = "1HZ100V";
+        var decimals = 2;
+        var ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+
+        ws.onopen = function (evt) {
+            ws.send(JSON.stringify({ ticks: symbol }));
+        };
+
+        var mticks = [0, 0];
+        var first = 0;
+
+
+        var dps = [];
+        var dataLength = 60;
+        var chart = new CanvasJS.Chart("chartContainer", {
+            theme: "light2", // "light1", "light2", "dark1", "dark2"
+            animationEnabled: true,
+            backgroundColor: "#020d1c",
+           /* backgroundColor: "#041220",
+           backgroundColor: "#021624", 
+             backgroundColor: "#041220",*/
+            data: [{
+                type: "line",
+                dataPoints: dps
+            }],
+            axisY: {
+                gridColor: "white",
+                gridDashType: "dot",
+                gridThickness: 0.4,
+                labelFontSize: 12,
+
+            },
+            axisX: {
+                gridColor: "white",
+                gridDashType: "dot",
+                gridThickness: 0.4,
+                labelFontSize: 12,
+                tickColor: "#293F56",
+                lineColor:"#293F56"
+                /*labelFontColor: "red"*/
+            }
+        });
+
+        //solo grafica los ticks y ya, solo muestra el change
+
+
+        var xval = 1;
+        var yval = 1;
+        //var colorline = "";
+        function drawOddEven(yv, dg, mcolor, lcolor,time,tick) {
+            xval = time;
+            yval = tick;
+
+            /*if (dg % 2 == 0) {
+                yval  = time;
+                // colorline = "green"
+            } else {
+                yval = time;
+                //colorline = "red"
+            }*/ 
+
+            dps.push({
+                x: xval,
+                y: yval,
+                indexLabel: dg,
+                indexLabelFontWeight: "bold",
+                indexLabelFontSize: 16,
+                indexLabelFontColor: lcolor,
+                markerSize: 6,
+                markerType: "circle",
+                markerColor: mcolor,
+               /* lineColor: "#83aad9", 
+                 lineColor: "#22BBE0",
+                 lineColor: "#1BB0E0", */
+                 lineColor: "#3399ff", 
+                lineDashType: "shortDot",
+                lineThickness: 0.3
+            });
+            //xval += 1;
+
+            if (dps.length > dataLength) {
+                dps.shift();
+            }
+            chart.render();
+
+            
+        }
+
+        ws.onmessage = function (msg) {
+            var data = JSON.parse(msg.data);
+            var digit = Number(data.tick.quote).toFixed(decimals).slice(-1);
+var tiempo = Number(data.tick.epoch);
+var mytk = Number(data.tick.quote);
+            mticks[1] = data.tick.quote;
+            mticks[0] = first;
+            first = data.tick.quote;
+            // console.log(digit);
+
+            if (mticks[0] && mticks[1] != 0) {
+                var change = Number(mticks[1] - mticks[0]).toFixed(decimals); // cuando el change es igual a cero es un caso especial, pos,neg,cero
+
+                if (change > 0) {
+                   /* console.log(change + " :cambio positivo");
+                    adding(change);*/
+                    console.log("subiendo");
+                    drawOddEven(change,change,"#55af11", "#01a501",tiempo,mytk);
+                  } else if (change < 0) {
+                    /*console.log(change + " :cambio negativo");
+                    adding(change);*/
+                    drawOddEven(change, change, "#f95734", "#f74117",tiempo,mytk);
+                    console.log("bajando");
+                  } else if (change == 0) {
+                    console.log("igual");
+                    drawOddEven(change, change, "#b2b5b9", "#b0b6ba",tiempo,mytk);
+                    /*console.log(change + " :no nay cambio");
+                    adding(change);*/
+                  }
+            }else{
+
+            }          
+
+        }
+    </script>
+</body>
