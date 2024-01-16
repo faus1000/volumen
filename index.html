@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ticks UpDown Mini - V100</title>
+    <title>Ticks Volume Data Collector - V100</title>
     <style>
       .container {
         display: flex;
@@ -12,8 +12,8 @@
         gap: 1px;
       }
       .box {
-        width: 40px;
-        height:40px;
+        width: 44px;
+        height:44px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -28,7 +28,7 @@
 </html>
 
 <script>
-  var symbol = "R_100";
+  var symbol = "1HZ100V";
   var decimals = 2;
 
   var ws = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=1089");
